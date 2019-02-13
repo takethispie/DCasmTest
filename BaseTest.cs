@@ -112,10 +112,21 @@ namespace Tests
         }
 
         [Test]
-        public void ErrorAdd() {
+        public void ErrorAddArgOrder() {
             InTestSetup(@"
             program
             add 10 $1 $2
+            ");
+
+            var root = par.gen.treeRoot;
+            //the parser stops at the first error 
+            Assert.AreEqual(par.errors.count, 1);
+        }
+
+        [Test]
+        public void ErrorAddArgNum() {
+            InTestSetup(@"
+            program
             add $1 $2 $3 $4
             ");
 
