@@ -4,7 +4,7 @@ using DCasm;
 namespace Tests
 {
     [TestFixture]
-    public class Tests
+    public class ParsedCodeTest
     {
         Scanner sc;
 		Parser par;
@@ -133,6 +133,22 @@ namespace Tests
             var root = par.gen.treeRoot;
             //the parser stops at the first error 
             Assert.AreEqual(par.errors.count, 1);
+        }
+
+        [Test]
+        public void Store() {
+            InTestSetup(@"
+            program
+            sw $1 $2 1
+            ");
+            var root = par.gen.treeRoot;
+            Assert.AreEqual(root.Childrens.Count, 1);
+            var store = root.Childrens[0];
+
+            Assert.AreEqual(store.Childrens.Count, 3);
+            Assert.AreEqual(store.Childrens[0].Value, "$1");
+            Assert.AreEqual(store.Childrens[1].Value, "$2");
+            Assert.AreEqual(store.Childrens[2].Value, "1");
         }
         
     }
