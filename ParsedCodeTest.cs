@@ -1,13 +1,13 @@
 using NUnit.Framework;
 using DCasm;
+using System.Collections.Generic;
 
 namespace Tests
 {
     [TestFixture]
     public class ParsedCodeTest
     {
-        Scanner sc;
-		Parser par;
+        CodeGenerator gen;
 
         [SetUp]
         public void Setup()
@@ -19,30 +19,28 @@ namespace Tests
             return node.GetType() == typeof(T);
         }
 
-        public void ArithmeticAsserts(INode root, string immediateOp, string registerOp, string immediateValue) {
-            Assert.Greater(root.Childrens.Count, 1);
-            Assert.IsTrue(root.Childrens[0].Childrens.Count == 3);
-            Assert.IsTrue(root.Childrens[1].Childrens.Count == 3);
-            var firstAdd = root.Childrens[0];
-            var secondAdd = root.Childrens[1];
+        public void ArithmeticAsserts(List<INode> root, string immediateOp, string registerOp, string immediateValue) {
+            Assert.Greater(root.Count, 1);
+            Assert.IsTrue(root[0].Children.Count == 3);
+            Assert.IsTrue(root[1].Children.Count == 3);
+            var firstAdd = root[0];
+            var secondAdd = root[1];
             Assert.IsTrue(firstAdd.Value == immediateOp);
-            Assert.IsTrue(isCorrectType<Register>(firstAdd.Childrens[0]));
-            Assert.IsTrue(isCorrectType<Register>(firstAdd.Childrens[1]));
-            Assert.IsTrue(isCorrectType<Const>(firstAdd.Childrens[2]));
-            Assert.AreEqual(firstAdd.Childrens[2].Value, immediateValue);
+            Assert.IsTrue(isCorrectType<Register>(firstAdd.Children[0]));
+            Assert.IsTrue(isCorrectType<Register>(firstAdd.Children[1]));
+            Assert.IsTrue(isCorrectType<Const>(firstAdd.Children[2]));
+            Assert.AreEqual(firstAdd.Children[2].Value, immediateValue);
             Assert.IsTrue(secondAdd.Value == registerOp);
-            Assert.IsTrue(isCorrectType<Register>(secondAdd.Childrens[0]));
-            Assert.IsTrue(isCorrectType<Register>(secondAdd.Childrens[1]));
-            Assert.IsTrue(isCorrectType<Register>(secondAdd.Childrens[2]));
+            Assert.IsTrue(isCorrectType<Register>(secondAdd.Children[0]));
+            Assert.IsTrue(isCorrectType<Register>(secondAdd.Children[1]));
+            Assert.IsTrue(isCorrectType<Register>(secondAdd.Children[2]));
         }
 
         public void InTestSetup(string program) {
-            sc = new Scanner(Utils.GenerateStreamFromString(program));
-            par = new Parser(sc);
             //par.CurrentISA = new DCASM8();
-            par.gen = new CodeGenerator();
-            par.Parse();
-            if (par.errors.count == 0) par.gen.Compile();
+            gen = new CodeGenerator(Utils.GenerateStreamFromString(program));
+            gen.Parse();
+            if (gen.ErrorCount == 0) gen.Compile();
         }
 
         [Test]
@@ -52,11 +50,11 @@ namespace Tests
             program
             li $1 10
             ");
-            Assert.Greater(par.gen.treeRoot.Childrens.Count, 0);
+            Assert.Greater(gen.RootNodes.Count, 0);
             //li must have 2 argument
-            Assert.IsTrue(par.gen.treeRoot.Childrens[0].Childrens.Count == 2);
-            var reg = par.gen.treeRoot.Childrens[0].Childrens[0];
-            var con = par.gen.treeRoot.Childrens[0].Childrens[1];
+            Assert.IsTrue(gen.RootNodes[0].Children.Count == 2);
+            var reg = gen.RootNodes[0].Children[0];
+            var con = gen.RootNodes[0].Children[1];
             Assert.IsTrue(reg.GetType() == typeof(Register));
             Assert.IsTrue(reg.Value == "$1");
             Assert.IsTrue(con.GetType() == typeof(Const));
@@ -71,7 +69,7 @@ namespace Tests
             add $3 $1 $2
             ");
 
-            var root = par.gen.treeRoot;
+            var root = gen.RootNodes;
             ArithmeticAsserts(root, "addi", "add", "10");
         }
 
@@ -83,7 +81,7 @@ namespace Tests
             sub $3 $1 $2
             ");
 
-            var root = par.gen.treeRoot;
+            var root = gen.RootNodes;
             ArithmeticAsserts(root, "subi", "sub", "10");
         }
 
@@ -95,7 +93,7 @@ namespace Tests
             div $3 $1 $2
             ");
 
-            var root = par.gen.treeRoot;
+            var root = gen.RootNodes;
             ArithmeticAsserts(root, "divi", "div", "10");
         }
 
@@ -107,7 +105,7 @@ namespace Tests
             mul $3 $1 $2
             ");
 
-            var root = par.gen.treeRoot;
+            var root = gen.RootNodes;
             ArithmeticAsserts(root, "muli", "mul", "10");
         }
 
@@ -118,21 +116,23 @@ namespace Tests
             add 10 $1 $2
             ");
 
-            var root = par.gen.treeRoot;
+            var root = gen.RootNodes;
             //the parser stops at the first error 
-            Assert.AreEqual(par.errors.count, 1);
+            Assert.AreEqual(gen.ErrorCount, 1);
         }
 
         [Test]
         public void ErrorAddArgNum() {
             InTestSetup(@"
-            program
-            add $1 $2 $3 $4
+            program 
+            {
+                add $1 $2 $3 $4
+            }
             ");
 
-            var root = par.gen.treeRoot;
+            var root = gen.RootNodes;
             //the parser stops at the first error 
-            Assert.AreEqual(par.errors.count, 1);
+            Assert.AreEqual(gen.ErrorCount, 1);
         }
 
         [Test]
@@ -141,14 +141,14 @@ namespace Tests
             program
             sw $1 $2 1
             ");
-            var root = par.gen.treeRoot;
-            Assert.AreEqual(root.Childrens.Count, 1);
-            var store = root.Childrens[0];
+            var root = gen.RootNodes;
+            Assert.AreEqual(root.Count, 1);
+            var store = root[0];
 
-            Assert.AreEqual(store.Childrens.Count, 3);
-            Assert.AreEqual(store.Childrens[0].Value, "$1");
-            Assert.AreEqual(store.Childrens[1].Value, "$2");
-            Assert.AreEqual(store.Childrens[2].Value, "1");
+            Assert.AreEqual(store.Children.Count, 3);
+            Assert.AreEqual(store.Children[0].Value, "$1");
+            Assert.AreEqual(store.Children[1].Value, "$2");
+            Assert.AreEqual(store.Children[2].Value, "1");
         }
         
     }
