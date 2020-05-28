@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using DCasm;
 using System.Collections.Generic;
@@ -15,9 +16,7 @@ namespace Tests
            
         }
 
-        public bool isCorrectType<T>(INode node) {
-            return node.GetType() == typeof(T);
-        }
+        
 
         public void ArithmeticAsserts(List<INode> root, string immediateOp, string registerOp, string immediateValue) {
             Assert.Greater(root.Count, 1);
@@ -26,17 +25,18 @@ namespace Tests
             var firstAdd = root[0];
             var secondAdd = root[1];
             Assert.IsTrue(firstAdd.Value == immediateOp);
-            Assert.IsTrue(isCorrectType<Register>(firstAdd.Children[0]));
-            Assert.IsTrue(isCorrectType<Register>(firstAdd.Children[1]));
-            Assert.IsTrue(isCorrectType<Const>(firstAdd.Children[2]));
+            Assert.IsTrue(Utils.isCorrectType<Register>(firstAdd.Children[0]));
+            Assert.IsTrue(Utils.isCorrectType<Register>(firstAdd.Children[1]));
+            Assert.IsTrue(Utils.isCorrectType<Const>(firstAdd.Children[2]));
             Assert.AreEqual(firstAdd.Children[2].Value, immediateValue);
             Assert.IsTrue(secondAdd.Value == registerOp);
-            Assert.IsTrue(isCorrectType<Register>(secondAdd.Children[0]));
-            Assert.IsTrue(isCorrectType<Register>(secondAdd.Children[1]));
-            Assert.IsTrue(isCorrectType<Register>(secondAdd.Children[2]));
+            Assert.IsTrue(Utils.isCorrectType<Register>(secondAdd.Children[0]));
+            Assert.IsTrue(Utils.isCorrectType<Register>(secondAdd.Children[1]));
+            Assert.IsTrue(Utils.isCorrectType<Register>(secondAdd.Children[2]));
         }
 
-        public void InTestSetup(string program) {
+
+        private void InTestSetup(string program) {
             //par.CurrentISA = new DCASM8();
             gen = new CodeGenerator(Utils.GenerateStreamFromString(program));
             gen.Parse();
@@ -151,5 +151,20 @@ namespace Tests
             Assert.AreEqual(store.Children[2].Value, "1");
         }
         
+        [Test]
+        public void While() {
+            InTestSetup(@"
+                program
+                {
+                    li $2 1
+                    li $3 10
+                    
+                    while $2 <= 10 {
+                        add $2 $2 1
+                    }
+                }
+            ");
+            Assert.AreEqual(gen.ErrorCount, 0);
+        }
     }
 }
