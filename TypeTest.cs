@@ -1,6 +1,7 @@
 using System;
 using DCasm;
 using NUnit.Framework;
+using Tests;
 
 namespace DCasmTest
 {
@@ -12,7 +13,7 @@ namespace DCasmTest
         
         private void InTestSetup(string program) {
             //par.CurrentISA = new DCASM8();
-            gen = new CodeGenerator(Utils.GenerateStreamFromString(program));
+            gen = new CodeGenerator(Tools.GenerateStreamFromString(program));
             gen.Parse();
             if (gen.ErrorCount == 0) gen.Compile();
         }
