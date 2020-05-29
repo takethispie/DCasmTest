@@ -1,9 +1,6 @@
 using System;
 using DCasm;
 using NUnit.Framework;
-using DCasm.Visitors;
-using System.Collections.Generic;
-using Tests;
 
 namespace DCasmTest
 {

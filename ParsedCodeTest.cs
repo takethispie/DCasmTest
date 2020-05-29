@@ -25,20 +25,20 @@ namespace Tests
             var firstAdd = root[0];
             var secondAdd = root[1];
             Assert.IsTrue(firstAdd.Value == immediateOp);
-            Assert.IsTrue(Utils.isCorrectType<Register>(firstAdd.Children[0]));
-            Assert.IsTrue(Utils.isCorrectType<Register>(firstAdd.Children[1]));
-            Assert.IsTrue(Utils.isCorrectType<Const>(firstAdd.Children[2]));
+            Assert.IsTrue(Tools.isCorrectType<Register>(firstAdd.Children[0]));
+            Assert.IsTrue(Tools.isCorrectType<Register>(firstAdd.Children[1]));
+            Assert.IsTrue(Tools.isCorrectType<Const>(firstAdd.Children[2]));
             Assert.AreEqual(firstAdd.Children[2].Value, immediateValue);
             Assert.IsTrue(secondAdd.Value == registerOp);
-            Assert.IsTrue(Utils.isCorrectType<Register>(secondAdd.Children[0]));
-            Assert.IsTrue(Utils.isCorrectType<Register>(secondAdd.Children[1]));
-            Assert.IsTrue(Utils.isCorrectType<Register>(secondAdd.Children[2]));
+            Assert.IsTrue(Tools.isCorrectType<Register>(secondAdd.Children[0]));
+            Assert.IsTrue(Tools.isCorrectType<Register>(secondAdd.Children[1]));
+            Assert.IsTrue(Tools.isCorrectType<Register>(secondAdd.Children[2]));
         }
 
 
         private void InTestSetup(string program) {
             //par.CurrentISA = new DCASM8();
-            gen = new CodeGenerator(Utils.GenerateStreamFromString(program));
+            gen = new CodeGenerator(Tools.GenerateStreamFromString(program));
             gen.Parse();
             if (gen.ErrorCount == 0) gen.Compile();
         }
