@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "DCasm/DCasm.csproj"
+                "DCasmTest.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
